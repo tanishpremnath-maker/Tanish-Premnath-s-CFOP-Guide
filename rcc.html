@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CFOP Lab – Timer, Scrambles, OLL &amp; PLL</title>
+<meta name="description" content="Practice CFOP: a scramble timer, all 57 OLL and 21 PLL algorithms with quiz mode, and a CFOP guide.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--ink:#2b2540;--mute:#6f6a85;--line:#2b2540;
+--r:#ff5d6c;--o:#ff9f5a;--y:#ffd45c;--g:#4ecb8d;--b:#4aa3ff;--p:#b58cff;
+--d:'Fredoka',system-ui,sans-serif;--t:'Nunito',system-ui,sans-serif}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:#fff;color:var(--ink);font:17px/1.65 var(--t);position:relative;overflow-x:hidden}
+#splash{position:absolute;inset:0;overflow:hidden;z-index:-1;pointer-events:none}
+#splash i{position:absolute;display:block;opacity:.5}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--b);outline-offset:3px}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:4px;align-items:center;padding:12px 5vw;background:#ffffffd9;backdrop-filter:blur(6px)}
+nav b{font:600 26px var(--d);margin-right:auto;display:flex;gap:10px;align-items:center}
+.logo{display:grid;grid-template-columns:repeat(3,9px);gap:2px;transform:rotate(-8deg)}.logo i{width:9px;height:9px;border-radius:50%}
+nav a{text-decoration:none;padding:6px 16px;border-radius:99px;font-weight:700}
+nav a:hover{background:var(--y)}
+section{padding:70px 5vw;max-width:1100px;margin:auto}
+h1,h2,h3{font-family:var(--d);line-height:1.1;margin:0}
+h2{font-size:clamp(38px,6vw,64px);font-weight:600;margin-bottom:12px;padding-bottom:14px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='12'%3E%3Cpath d='M0 6 Q15 -2 30 6 T60 6 T90 6 T120 6' fill='none' stroke='%23ff5d6c' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") left bottom/90px 9px no-repeat}
+.sub{color:var(--mute);max-width:60ch;margin:0 0 30px}
+#timer{text-align:center;padding-top:40px}
+.scr{font:500 clamp(20px,3.2vw,30px)/1.5 var(--d);letter-spacing:.05em;max-width:880px;margin:0 auto 14px;min-height:3em}
+.pad{margin:18px auto;padding:46px 10px;max-width:720px;border-radius:58% 42% 52% 48% / 38% 42% 58% 62%;background:#fff;border:4px solid var(--ink);box-shadow:8px 8px 0 var(--y);user-select:none;touch-action:manipulation;cursor:pointer;transition:box-shadow .15s,transform .15s}
+.pad.hold{box-shadow:8px 8px 0 var(--r)}.pad.ready{box-shadow:8px 8px 0 var(--g);transform:translate(2px,2px)}
+.time{font:600 clamp(80px,17vw,170px)/1 var(--d);font-variant-numeric:tabular-nums}
+.pad.hold .time{color:var(--r)}.pad.ready .time{color:#1f9d62}
+.hint{color:var(--mute);font-size:15px}
+button,.btn{font:700 16px var(--t);color:var(--ink);background:#fff;border:3px solid var(--ink);padding:8px 18px;border-radius:99px;cursor:pointer;text-decoration:none;display:inline-block;transition:background .15s}
+button:hover,.btn:hover{background:var(--y)}
+button.on{background:var(--b);color:#fff}
+.stats{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:26px 0}
+.stat{border:3px solid var(--ink);border-radius:30px 18px 30px 18px;padding:10px 22px;min-width:116px;background:#fff}
+.stat:nth-child(1){background:#ffe9a8}.stat:nth-child(2){background:#c9e6ff}.stat:nth-child(3){background:#ffd0d5}.stat:nth-child(4){background:#cdf3e0}
+.stat b{display:block;font:600 28px var(--d);font-variant-numeric:tabular-nums}.stat span{font-size:14px;color:var(--mute);font-weight:700}
+#hist{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-height:150px;overflow:auto;margin-top:16px}
+#hist span{background:#fff;border:2px solid var(--ink);border-radius:99px;padding:1px 12px;font-weight:700;font-variant-numeric:tabular-nums}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.step{padding:28px;background:var(--c);border:3px solid var(--ink);border-radius:50px 24px 50px 24px}
+.step:nth-child(even){border-radius:24px 50px 24px 50px}
+.step h3{font-size:34px;font-weight:600}.step em{font-style:normal;font-weight:700;opacity:.7}.step p{margin:10px 0 0}
+.tanish{margin-top:30px;border:3px solid var(--ink);border-radius:70px 30px 70px 30px;padding:34px 38px;background:#fff;box-shadow:8px 8px 0 var(--p)}
+.tanish h3{font-size:34px;font-weight:600;margin-bottom:8px}.tanish p{margin:0 0 16px;max-width:60ch}
+.tanish .btn{background:var(--p)}.tanish .btn:hover{background:var(--y)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:24px}
+.tools input[type=search]{font:700 16px var(--t);padding:9px 18px;border-radius:99px;border:3px solid var(--ink);background:#fff;color:var(--ink);min-width:210px}
+.prog{margin-left:auto;font-weight:800;background:var(--g);border:3px solid var(--ink);padding:2px 14px;border-radius:99px;font-size:15px}
+.drill{display:none;border:3px solid var(--ink);background:#fff;border-radius:60px 28px 60px 28px;padding:26px;margin-bottom:24px;text-align:center;box-shadow:8px 8px 0 var(--b)}
+.drill.show{display:block}.drill h3{font-size:48px;font-weight:600}.drill code{display:block;margin:10px 0;min-height:1.7em}
+.grp{margin:34px 0 12px;font:600 26px var(--d)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
+.card{background:#fff;border:3px solid var(--ink);border-radius:30px 16px 30px 16px;padding:14px 18px;display:grid;gap:6px}
+.card:nth-child(3n+2){border-radius:16px 30px 16px 30px}
+.card:nth-child(4n){border-radius:26px}
+.card.done{background:#e3f8ec}
+.card header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card h4{margin:0;font:600 21px var(--d)}
+.card label{font-size:14px;font-weight:700;color:var(--mute);display:flex;gap:6px;align-items:center;cursor:pointer}
+.card input{accent-color:var(--g);width:18px;height:18px}
+code{font:800 16px/1.7 var(--t);letter-spacing:.04em;word-spacing:.25em}
+.pic{width:104px;height:104px;flex:none}.drill .pic{width:140px;height:140px;margin:6px auto;display:block}.row{display:flex;gap:16px;align-items:center}.quiz .card code{filter:blur(7px);cursor:pointer;transition:filter .2s}.quiz .card code.show{filter:none}
+footer{padding:50px 5vw 60px;text-align:center;color:var(--mute);font-weight:600}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.more{font-size:14px;padding:3px 14px;border-width:2px;justify-self:start}.alts{display:grid;gap:6px;border-top:2px dashed var(--line);padding-top:8px}.alts[hidden]{display:none}.tab{margin-left:4px}.tab.on{background:var(--b);color:#fff}.balg{display:inline-block;margin:10px 8px 0 0;background:#fff;border:3px solid var(--ink);border-radius:99px;padding:4px 16px}.balg em{font-style:normal;font-weight:800}.step{margin-top:0}[hidden]{display:none!important}nav{flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div id="splash"></div>
+<nav><b><span class="logo" id="logo"></span>CFOP Lab</b><a class="cf" href="#timer">Timer</a><a class="cf" href="#guide">Guide</a><a class="cf" href="#oll">OLL</a><a class="cf" href="#pll">PLL</a><button class="tab on" data-v="cfop">CFOP</button><button class="tab" data-v="beg">Beginner method</button></nav>
+
+<div id="v-cfop">
+<section id="timer">
+  <h1 class="scr" id="scr">…</h1>
+  <button id="newscr">New scramble</button>
+  <div class="pad" id="pad" tabindex="0" role="button" aria-label="Timer. Hold space or press and hold to get ready, release to start."><div class="time" id="tm">0.00</div><div class="hint" id="hint">Hold space (or press and hold), release to start</div></div>
+  <div class="stats"><div class="stat"><b id="sBest">–</b><span>Best</span></div><div class="stat"><b id="sA5">–</b><span>Ao5</span></div><div class="stat"><b id="sA12">–</b><span>Ao12</span></div><div class="stat"><b id="sN">0</b><span>Solves</span></div></div>
+  <button id="undo">Delete last</button> <button id="plus2">+2 last</button> <button id="clear">Clear session</button>
+  <div id="hist"></div>
+</section>
+
+<section id="guide">
+  <h2>The CFOP method</h2>
+  <p class="sub">Four steps, solved in order. Most of your speed comes from looking ahead so there are no pauses between them.</p>
+  <div class="steps">
+    <div class="step" style="--c:#c9e6ff"><h3>Cross</h3><em>Plan in inspection</em><p>Build a cross on the bottom face, with each edge matching its center. Plan all of it before the timer starts, then keep the cross on the bottom for the rest of the solve.</p></div>
+    <div class="step" style="--c:#cdf3e0"><h3>F2L</h3><em>First two layers</em><p>Insert each corner and its edge together as a pair, four times. This is about two thirds of your solve, so it's where practice pays off most. Learn to find the next pair while you insert the current one.</p></div>
+    <div class="step" style="--c:#ffe9a8"><h3>OLL</h3><em>Orient last layer</em><p>Make the whole top face one color. Beginners can use a 2-look approach (edges, then corners) and later learn all 57 one-step algorithms below.</p></div>
+    <div class="step" style="--c:#ffd0d5"><h3>PLL</h3><em>Permute last layer</em><p>Move the top pieces into place to finish. 2-look PLL needs 6 algorithms. Full PLL is 21, listed below.</p></div>
+  </div>
+  <div class="tanish">
+    <h3>Tanish Premnath's CFOP guide</h3>
+    <p id="gtext">Read the full step-by-step CFOP guide by Tanish Premnath.</p>
+    <a class="btn" id="glink" href="#" target="_blank" rel="noopener">Open the guide</a>
+  </div>
+</section>
+
+<section id="oll"><h2>OLL</h2><p class="sub">All 57 cases, grouped by shape. Tick a case when you know it. Each picture is a top view of the case: yellow is the color you want facing up. Turn on quiz mode to blur the algorithms and click one to reveal it.</p><div class="tools" data-k="oll"></div><div class="drill" data-k="oll"></div><div class="list" data-k="oll"></div></section>
+<section id="pll"><h2>PLL</h2><p class="sub">All 21 cases. Each picture is the top view, with the colored strips showing the side stickers you'll see. Moves like x, M, and d are slice or rotation moves. Rotate the cube first if an algorithm starts with x.</p><div class="tools" data-k="pll"></div><div class="drill" data-k="pll"></div><div class="list" data-k="pll"></div></section>
+</div>
+<div id="v-beg" hidden>
+<section><h2>Beginner method</h2><p class="sub">Solve the cube one layer at a time. It takes more moves than CFOP, but it only needs 7 short algorithms and no memorizing of big lists. When it feels easy, jump to CFOP.</p>
+<div class="step" style="--c:#fff3c4"><h3>How to read the moves</h3><p>Each letter is a face: U up, D down, F front, R right, L left. A plain letter turns that face a quarter turn clockwise, looking straight at it. A ' (like R') turns it the other way. A 2 (like U2) is a half turn.</p></div>
+<div id="bsteps"></div>
+<div class="tanish"><h3>Solved it a few times?</h3><p>Try the timer and learn CFOP for faster solves.</p><button class="btn" data-v="cfop">Go to CFOP</button></div></section></div>
+<footer>Made for cubers. Algorithms are standard community sequences, so you can swap in the ones that feel best in your hands.</footer>
+
+<script>
+// ===== Edit this after you publish: paste the link to Tanish Premnath's guide =====
+const GUIDE_URL = "";
+// ==================================================================================
+const $=s=>document.querySelector(s), ls=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
+$('#logo').innerHTML=['r','o','y','g','b','p','b','g','y'].map(c=>`<i style="background:var(--${c})"></i>`).join('');
+if(GUIDE_URL){$('#glink').href=GUIDE_URL}else{$('#glink').style.display='none';$('#gtext').textContent='Tanish Premnath\'s CFOP guide goes here. Set GUIDE_URL at the top of the script in index.html to link it.'}
+
+/* ---------- splotches ---------- */
+(()=>{const C=['--r','--o','--y','--g','--b','--p'],R=['63% 37% 54% 46%/55% 48% 52% 45%','40% 60% 70% 30%/40% 50% 60% 50%','50% 50% 30% 70%/60% 40% 60% 40%','30% 70% 60% 40%/50% 60% 40% 50%'];
+const P=[[2,-6,300],[6,84,240],[14,70,160],[20,-8,220],[28,90,300],[36,6,170],[44,80,230],[52,-5,320],[60,88,180],[68,4,240],[76,78,300],[84,-6,200],[92,70,260],[10,38,90],[48,46,110],[88,30,120]];
+$('#splash').innerHTML=P.map((p,i)=>`<i style="top:${p[0]}%;left:${p[1]}%;width:${p[2]}px;height:${p[2]*(.8+(i%3)*.15)}px;background:var(${C[i%6]});border-radius:${R[i%4]};transform:rotate(${i*47%360}deg)"></i>`).join('')})();
+
+/* ---------- scramble ---------- */
+const faces='URFDLB'.split(''),mods=['',"'",'2'];
+function scramble(){const s=[],F=[];while(s.length<20){const f=Math.floor(Math.random()*6),n=F.length;if(n&&f===F[n-1])continue;if(n>1&&f%3===F[n-1]%3&&f===F[n-2])continue;F.push(f);s.push(faces[f]+mods[Math.floor(Math.random()*3)])}return s.join(' ')}
+const newScr=()=>$('#scr').textContent=scramble();newScr();$('#newscr').onclick=newScr;
+
+/* ---------- timer ---------- */
+let times=ls('cfop-times')||[],state='idle',t0=0,raf,holdT;
+const pad=$('#pad'),tm=$('#tm'),hint=$('#hint');
+const fmt=ms=>{if(ms==null)return'–';if(ms===Infinity)return'DNF';const s=ms/1000;return s>=60?Math.floor(s/60)+':'+(s%60).toFixed(2).padStart(5,'0'):s.toFixed(2)};
+const avg=n=>{if(times.length<n)return null;const a=times.slice(-n).slice().sort((x,y)=>x-y).slice(1,-1);return a.reduce((p,c)=>p+c,0)/a.length};
+function render(){$('#sBest').textContent=fmt(times.length?Math.min(...times):null);$('#sA5').textContent=fmt(avg(5));$('#sA12').textContent=fmt(avg(12));$('#sN').textContent=times.length;$('#hist').innerHTML=times.slice().reverse().map(t=>`<span>${fmt(t)}</span>`).join('');ls('cfop-times',times)}
+function tick(){tm.textContent=fmt(performance.now()-t0);raf=requestAnimationFrame(tick)}
+function down(){if(state==='run'){stop();return}if(state!=='idle')return;state='hold';pad.className='pad hold';holdT=setTimeout(()=>{if(state==='hold'){state='ready';pad.className='pad ready'}},350)}
+function up(){clearTimeout(holdT);if(state==='ready'){state='run';pad.className='pad';t0=performance.now();hint.textContent='Press any key or tap to stop';tick()}else if(state==='hold'){state='idle';pad.className='pad'}else if(state==='stopped'){state='idle'}}
+function stop(){cancelAnimationFrame(raf);const t=performance.now()-t0;tm.textContent=fmt(t);times.push(t);state='stopped';hint.textContent='Hold space for the next solve';render();newScr()}
+addEventListener('keydown',e=>{if(e.target.matches('input')||$('#v-cfop').hidden)return;if(e.code==='Space'){e.preventDefault();if(!e.repeat)down()}else if(state==='run')stop()});
+addEventListener('keyup',e=>{if(e.code==='Space')up()});
+pad.addEventListener('pointerdown',e=>{e.preventDefault();down()});pad.addEventListener('pointerup',up);
+$('#undo').onclick=()=>{times.pop();render()};$('#plus2').onclick=()=>{if(times.length){times[times.length-1]+=2000;render()}};
+$('#clear').onclick=()=>{if(confirm('Clear all solves?')){times=[];tm.textContent='0.00';render()}};render();
+
+/* ---------- cube simulator: draws each case by running the algorithm backwards ---------- */
+const MV={U:['y',-1,p=>p[1]==1],D:['y',1,p=>p[1]==-1],R:['x',-1,p=>p[0]==1],L:['x',1,p=>p[0]==-1],F:['z',-1,p=>p[2]==1],B:['z',1,p=>p[2]==-1],u:['y',-1,p=>p[1]>=0],d:['y',1,p=>p[1]<=0],r:['x',-1,p=>p[0]>=0],l:['x',1,p=>p[0]<=0],f:['z',-1,p=>p[2]>=0],b:['z',1,p=>p[2]<=0],M:['x',1,p=>p[0]==0],E:['y',1,p=>p[1]==0],S:['z',-1,p=>p[2]==0],x:['x',-1,()=>true],y:['y',-1,()=>true],z:['z',-1,()=>true]};
+const R1={x:v=>[v[0],-v[2],v[1]],y:v=>[v[2],v[1],-v[0]],z:v=>[-v[1],v[0],v[2]]};
+function turn(st,m,mul){const[ax,dk,cond]=MV[m];const q=(((dk*mul)%4)+4)%4;return st.map(s=>{if(!cond(s.p))return s;let p=s.p,n=s.n;for(let i=0;i<q;i++){p=R1[ax](p);n=R1[ax](n)}return{p,n,c:s.c}})}
+function solved(){const a=[];for(let x=-1;x<2;x++)for(let y=-1;y<2;y++)for(let z=-1;z<2;z++){const p=[x,y,z];p.forEach((v,i)=>{if(v){const n=[0,0,0];n[i]=v;a.push({p,n,c:n})}})}return a}
+function runAlg(st,alg,inv){let t=alg.match(/[URFDLBurfdlbMESxyz][2']?/g).map(m=>[m[0],m[1]==="'"?-1:m[1]==='2'?2:1]);if(inv)t=t.reverse().map(([m,k])=>[m,k===2?2:-k]);t.forEach(([m,k])=>st=turn(st,m,k));return st}
+function caseState(alg){for(let a=0;a<4;a++)for(let b=0;b<4;b++)for(let c=0;c<4;c++){let f=solved();for(let i=0;i<a;i++)f=turn(f,'x',1);for(let i=0;i<b;i++)f=turn(f,'y',1);for(let i=0;i<c;i++)f=turn(f,'z',1);const s=runAlg(f,alg,true);if(s.some(k=>k.p+''=='0,1,0'&&k.c[1]==1&&k.n[1]==1)&&s.some(k=>k.p+''=='0,0,1'&&k.c[2]==1&&k.n[2]==1))return s}return solved()}
+
+const PC={},COL={'0,1,0':'#ffd45c','0,0,1':'#4ecb8d','1,0,0':'#ff5d6c','0,0,-1':'#4aa3ff','-1,0,0':'#ff9f5a','0,-1,0':'#fff'};
+function pic(alg,mode){const key=mode+alg;if(PC[key])return PC[key];let o='';
+ caseState(alg).filter(s=>s.p[1]==1).forEach(s=>{const cx=15+(s.p[0]+1)*24,cy=15+(s.p[2]+1)*24;let x,y,w,h;
+  if(s.n[1]==1){x=cx;y=cy;w=h=22}else if(s.n[2]==-1){x=cx;y=5;w=22;h=8}else if(s.n[2]==1){x=cx;y=87;w=22;h=8}else if(s.n[0]==1){x=87;y=cy;w=8;h=22}else{x=5;y=cy;w=8;h=22}
+  let f=COL[s.c+''];if(mode==='oll'&&s.c[1]!=1){if(s.n[1]==1)f='#cfcbdc';else return}
+  o+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="${f}" stroke="#2b2540" stroke-width="2"/>`});
+ return PC[key]=`<svg class="pic" viewBox="0 0 100 100" role="img" aria-label="Top view of this case">${o}</svg>`}
+
+/* ---------- algorithms ---------- */
+const OLL=`1|R U2 R2 F R F' U2 R' F R F'
+2|F R U R' U' F' f R U R' U' f'
+3|f R U R' U' f' U' F R U R' U' F'
+4|f R U R' U' f' U F R U R' U' F'
+5|r' U2 R U R' U r
+6|r U2 R' U' R U' r'
+7|r U R' U R U2 r'
+8|r' U' R U' R' U2 r
+9|R U R' U' R' F R2 U R' U' F'
+10|R U R' U R' F R F' R U2 R'
+11|r U R' U R' F R F' R U2 r'
+12|F R U R' U' F' U F R U R' U' F'
+13|F U R U2 R' U' R U R' F'
+14|R' F R U R' F' R F U' F'
+15|l' U' l L' U' L U l' U l
+16|r U r' R U R' U' r U' r'
+17|R U R' U R' F R F' U2 R' F R F'
+18|r U R' U R U2 r2 U' R U' R' U2 r
+19|r' R U R U R' U' r R2 F R F'
+20|r U R' U' M2 U R U' R' U' M'
+21|R U2 R' U' R U R' U' R U' R'
+22|R U2 R2 U' R2 U' R2 U2 R
+23|R2 D R' U2 R D' R' U2 R'
+24|r U R' U' r' F R F'
+25|F' r U R' U' r' F R
+26|R U2 R' U' R U' R'
+27|R U R' U R U2 R'
+28|r U R' U' r' R U R U' R'
+29|R U R' U' R U' R' F' U' F R U R'
+30|F R' F R2 U' R' U' R U R' F2
+31|R' U' F U R U' R' F' R
+32|R U B' U' R' U R B R'
+33|R U R' U' R' F R F'
+34|R U R2 U' R' F R U R U' F'
+35|R U2 R2 F R F' R U2 R'
+36|R' U' R U' R' U R U R B' R' B
+37|F R' F' R U R U' R'
+38|R U R' U R U' R' U' R' F R F'
+39|R U R' F' U' F U R U2 R'
+40|R' F R U R' U' F' U R
+41|R U R' U R U2 R' F R U R' U' F'
+42|R' U' R U' R' U2 R F R U R' U' F'
+43|R' U' F' U F R
+44|F U R U' R' F'
+45|F R U R' U' F'
+46|R' U' R' F R F' U R
+47|R' U' R' F R F' R' F R F' U R
+48|F R U R' U' R U R' U' F'
+49|r U' r2 U r2 U r2 U' r
+50|r' U r2 U' r2 U' r2 U r'
+51|f R U R' U' R U R' U' f'
+52|R U R' U R d' R U' R' F'
+53|r' U' R U' R' U R U' R' U2 r
+54|r U R' U R U' R' U R U2 r'
+55|R U2 R2 U' R U' R' U2 F R F'
+56|r U r' U R U' R' U R U' R' r U' r'
+57|R U R' U' M' U R U' r'`;
+const OG={"Cross, corners twisted":[21,22,23,24,25,26,27],"No edges (dot)":[1,2,3,4,17,18,19,20],"Squares":[5,6],"Small lightning":[7,8,11,12],"Fish":[9,10,35,37],"Knight move":[13,14,15,16],"Awkward":[29,30,41,42],"P shapes":[31,32,43,44],"W shapes":[36,38],"Big lightning":[39,40],"C and T shapes":[33,34,45,46],"I shapes":[51,52,55,56],"Other":[28,47,48,49,50,53,54,57]};
+const PLL=`Aa|x R' U R' D2 R U' R' D2 R2
+Ab|x R2 D2 R U R' D2 R U' R
+E|x' R U' R' D R U R' D' R U R' D R U' R' D'
+F|R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R
+Ga|R2 U R' U R' U' R U' R2 U' D R' U R D'
+Gb|R' U' R U D' R2 U R' U R U' R U' R2 D
+Gc|R2 U' R U' R U R' U R2 U D' R U' R' D
+Gd|R U R' U' D R2 U' R U' R' U R' U R2 D'
+H|M2 U M2 U2 M2 U M2
+Ja|R' U L' U2 R U' R' U2 R L
+Jb|R U R' F' R U R' U' R' F R2 U' R'
+Na|R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'
+Nb|R' U R U' R' F' U' F R U R' F R' F' R U' R
+Ra|R U' R' U' R U R D R' U' R D' R' U2 R'
+Rb|R' U2 R U2 R' F R U R' U' R' F' R2
+T|R U R' U' R' F R2 U' R' U' R U R' F'
+Ua|R U' R U R U R U' R' U' R2
+Ub|R2 U R U R' U' R' U' R' U R'
+V|R' U R' U' y R' F' R2 U' R' U R' F R F
+Y|F R U' R' U' R U R' F' R U R' U' R' F R F'
+Z|M' U M2 U M2 U M' U2 M2`;
+const ALT={"oll":{"5":["U2 l' U2 L U L' U l"],"6":["U2 l U2 L' U' L U' l'"],"12":["U' M' R' U' R U' R' U2 R U' R r'"],"13":["F U R U' R2 F' R U R U' R'"],"15":["U2 r' U' r R' U' R U r' U r"],"18":["U R U2 R2 F R F' U2 M' U R U' r'"],"21":["U R U R' U R U' R' U R U2 R'"],"25":["U' R' F R B' R' F' R B"],"26":["U L' U' L U' L' U2 L","U' R' U' R U' R' U2 R"],"30":["F U R U2 R' U' R U2 R' U' F'"],"31":["U2 S' L' U' L U L F' L' f"],"32":["S R U R' U' R' F R f'"],"36":["U2 L' U' L U' L' U L U L F' L' F"],"39":["U2 L F' L' U' L U F U' L'"],"43":["U' f' L' U' L U f"],"44":["U2 f R U R' U' f'"],"47":["F' L' U' L U L' U' L U F"],"49":["U2 R B' R2 F R2 B R2 F' R"],"50":["U2 R' F R2 B' R2 F' R2 B R'"],"51":["U2 F U R U' R' U R U' R' F'"],"52":["U2 R' F' U' F U' R U R' U R"],"55":["U R' F R U R U' R2 F' R2 U' R' U R U R'"],"57":["R U R' U' r R' U R U' r'"]},"pll":{"Aa":["R' F R' B2 R F' R' B2 R2"],"Ab":["U R B' R F2 R' B R F2 R2","R2 B2 R F R' B2 R F' R"],"H":["R2 U2 R U2 R2 U2 R2 U2 R U2 R2"],"Ja":["U' L' U' L F L' U' L U L F' L2 U L"],"Jb":["R U2 R' U' R U2 L' U R' U' L"],"Nb":["R' U L' U2 R U' L R' U L' U2 R U' L"],"Na":["L U' R U2 L' U R' L U' R U2 L' U R'"],"Ra":["R U R' F' R U2 R' U2 R' F R U R U2 R'"],"Rb":["U R2 F R U R U' R' F' R U2 R' U2 R"],"Ua":["M2 U M U2 M' U M2","U2 R2 U' R' U' R U R U R U' R"],"Ub":["M2 U' M U2 M' U' M2","U2 R' U R' U' R' U' R' U R U R2"],"Z":["U M2 U M2 U M' U2 M2 U2 M'","R' U' R U' R U R U' R' U R U R2 U' R'"],"F":["U' R' U R U' R2 F' U' F U R F R' F' R2"],"V":["U R U' R U R' D R D' R U' D R2 U R2 D' R2","R' U R' d' R' F' R2 U' R' U R' F R F"],"T":["U2 L' U' L U L F' L2 U L U L' U' L F"]}};
+const parse=s=>s.split('\n').map(l=>{const[n,a]=l.split('|');return{n,a}});
+const SETS={oll:{cases:parse(OLL).map(c=>({...c,n:'OLL '+c.n,id:c.n})),groups:Object.entries(OG).map(([g,l])=>[g,l.map(String)])},
+ pll:{cases:parse(PLL).map(c=>({...c,n:c.n+' perm',id:c.n})),groups:[["All PLL cases",parse(PLL).map(c=>c.n)]]}};
+Object.keys(SETS).forEach(k=>{
+  const S=SETS[k],tools=$(`.tools[data-k=${k}]`),list=$(`.list[data-k=${k}]`),drill=$(`.drill[data-k=${k}]`);
+  let done=new Set(ls('done-'+k)||[]),quiz=false,q='',only=false,cur=null;
+  tools.innerHTML=`<input type="search" placeholder="Search ${k.toUpperCase()}…" aria-label="Search"><button data-a=quiz>Quiz mode</button><button data-a=only>Hide learned</button><button data-a=drill>Random drill</button><span class="prog"></span>`;
+  const draw=()=>{
+    list.className='list'+(quiz?' quiz':'');
+    list.innerHTML=S.groups.map(([g,ids])=>{
+      const cs=ids.map(i=>S.cases.find(c=>c.id===i)).filter(c=>c&&(!q||(c.n+c.a).toLowerCase().includes(q))&&!(only&&done.has(c.id)));
+      return cs.length?`<div class="grp">${g}</div><div class="grid">${cs.map(c=>`<div class="card${done.has(c.id)?' done':''}"><header><h4>${c.n}</h4><label><input type="checkbox" data-id="${c.id}"${done.has(c.id)?' checked':''}>Learned</label></header><div class="row">${pic(c.a,k)}<code>${c.a}</code></div>${(ALT[k][c.id]||[]).length?`<button class="more" aria-expanded="false">More algs (${ALT[k][c.id].length})</button><div class="alts" hidden>${ALT[k][c.id].map(a=>`<code>${a}</code>`).join('')}</div>`:''}</div>`).join('')}</div>`:''}).join('')||'<p class="sub">No cases match.</p>';
+    tools.querySelector('.prog').textContent=`${done.size} of ${S.cases.length} learned`;
+    tools.querySelector('[data-a=quiz]').classList.toggle('on',quiz);tools.querySelector('[data-a=only]').classList.toggle('on',only);
+  };
+  list.onclick=e=>{const cb=e.target.closest('input[data-id]');if(cb){cb.checked?done.add(cb.dataset.id):done.delete(cb.dataset.id);ls('done-'+k,[...done]);draw();return}const m=e.target.closest('.more');if(m){const d=m.nextElementSibling;d.hidden=!d.hidden;m.setAttribute('aria-expanded',!d.hidden);return}const c=e.target.closest('code');if(c)c.classList.toggle('show')};
+  tools.oninput=e=>{q=e.target.value.toLowerCase();draw()};
+  tools.onclick=e=>{const a=e.target.dataset.a;if(a==='quiz'){quiz=!quiz;draw()}if(a==='only'){only=!only;draw()}
+    if(a==='drill'){const pool=S.cases.filter(c=>!done.has(c.id)||done.size===S.cases.length);cur=pool[Math.floor(Math.random()*pool.length)];drill.className='drill show';drill.innerHTML=`<h3>${cur.n}</h3>${pic(cur.a,k)}<code>${'&nbsp;'}</code><button data-r>Show algorithm</button> <button data-n>Next case</button>`;}};
+  drill.onclick=e=>{if(e.target.dataset.r!==undefined)drill.querySelector('code').textContent=cur.a;if(e.target.dataset.n!==undefined)tools.querySelector('[data-a=drill]').click()};
+  draw();
+});
+
+/* ---------- tabs + beginner steps ---------- */
+const BEG=[["White cross","#ffd0d5","Put the white center on top. Build a plus of white edges, and turn the top so each edge's side color matches the center below it. There's no algorithm here. Solve one edge at a time and think about where it needs to go.",[]],
+["White corners","#c9e6ff","Flip the cube so white is on the bottom. Find a white corner in the top layer and turn the top until it sits above its slot at the front right. Repeat this until the corner drops in with white facing down. A corner stuck in the bottom layer the wrong way? Do it once to pop it out.",[["Repeat 1 to 5 times","R U R' U'"]]],
+["Middle layer","#cdf3e0","Find a top edge with no yellow. Turn the top until its front color matches the center in front of it, then send it right or left depending on its other color. An edge stuck in the middle the wrong way? Use either one to pop it out, then try again.",[["Send it right","U R U' R' U' F' U F"],["Send it left","U' L' U L U F U' F'"]]],
+["Yellow cross","#ffe9a8","Look at the yellow on top: a dot, an L shape, or a line. For a line, hold it left to right. For an L, hold it in the back left. Do the algorithm, then look again, until you have a yellow plus.",[["Repeat until a cross","F R U R' U' F'"]]],
+["Match the yellow edges","#e5d7ff","Turn the top until at least two edges match their side centers. If two neighbors match, hold them at the back and right. Do this, turn the top, and check again until all four match.",[["Swap edges","R U R' U R U2 R' U"]]],
+["Place the yellow corners","#ffd9b8","Look for a corner that is already in the right place (its three colors match the pieces around it, even if it's twisted). Hold it at the front right on top. If none is right, do the algorithm anywhere once and look again. Repeat until all four corners are in place.",[["Cycle corners","U R U' L' U R' U' L"]]],
+["Twist the yellow corners","#cdf3e0","Hold a corner at the front right on top that doesn't have yellow facing up. Repeat the algorithm 2 or 4 times until yellow faces up. Don't turn the whole cube. Only turn the top to bring the next corner over. The cube will look scrambled in the middle, but it all lines up after the last corner.",[["Repeat until yellow is up","R' D' R D"]]]];
+$('#bsteps').innerHTML=BEG.map((b,i)=>`<div class="step" style="--c:${b[1]};margin-top:18px"><h3>Step ${i+1}: ${b[0]}</h3><p>${b[2]}</p>${b[3].map(a=>`<span class="balg"><em>${a[0]}:</em> <code>${a[1]}</code></span>`).join('')}</div>`).join('');
+const show=v=>{$('#v-cfop').hidden=v!=='cfop';$('#v-beg').hidden=v!=='beg';document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.v===v));document.querySelectorAll('nav .cf').forEach(a=>a.hidden=v!=='cfop');scrollTo(0,0)};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-v]');if(t){show(t.dataset.v);history.replaceState(null,'',t.dataset.v==='beg'?'#beginner':'#cfop')}});
+if(location.hash==='#beginner')show('beg');
+</script>
+</body>
+</html>
