@@ -83,7 +83,7 @@ footer{padding:50px 5vw 60px;text-align:center;color:var(--mute);font-weight:600
   <button id="newscr">New scramble</button>
   <div class="pad" id="pad" tabindex="0" role="button" aria-label="Timer. Hold space or press and hold to get ready, release to start."><div class="time" id="tm">0.00</div><div class="hint" id="hint">Hold space (or press and hold), release to start</div></div>
   <div class="stats"><div class="stat"><b id="sBest">–</b><span>Best</span></div><div class="stat"><b id="sA5">–</b><span>Ao5</span></div><div class="stat"><b id="sA12">–</b><span>Ao12</span></div><div class="stat"><b id="sN">0</b><span>Solves</span></div></div>
-  <button id="undo">Delete last</button> <button id="plus2">+2 last</button> <button id="clear">Clear session</button>
+  <button id="undo">Delete last</button> <button id="plus2">+2 last</button> <button id="dnf">DNF last</button> <button id="clear">Clear session</button>
   <div id="hist"></div>
 </section>
 
@@ -96,11 +96,7 @@ footer{padding:50px 5vw 60px;text-align:center;color:var(--mute);font-weight:600
     <div class="step" style="--c:#ffe9a8"><h3>OLL</h3><em>Orient last layer</em><p>Make the whole top face one color. Beginners can use a 2-look approach (edges, then corners) and later learn all 57 one-step algorithms below.</p></div>
     <div class="step" style="--c:#ffd0d5"><h3>PLL</h3><em>Permute last layer</em><p>Move the top pieces into place to finish. 2-look PLL needs 6 algorithms. Full PLL is 21, listed below.</p></div>
   </div>
-  <div class="tanish">
-    <h3>Tanish Premnath's CFOP guide</h3>
-    <p id="gtext">Read the full step-by-step CFOP guide by Tanish Premnath.</p>
-    <a class="btn" id="glink" href="#" target="_blank" rel="noopener">Open the guide</a>
-  </div>
+  
 </section>
 
 <section id="oll"><h2>OLL</h2><p class="sub">All 57 cases, grouped by shape. Tick a case when you know it. Each picture is a top view of the case: yellow is the color you want facing up. Turn on quiz mode to blur the algorithms and click one to reveal it.</p><div class="tools" data-k="oll"></div><div class="drill" data-k="oll"></div><div class="list" data-k="oll"></div></section>
@@ -114,12 +110,6 @@ footer{padding:50px 5vw 60px;text-align:center;color:var(--mute);font-weight:600
 <footer>Made for cubers. Algorithms are standard community sequences, so you can swap in the ones that feel best in your hands.</footer>
 
 <script>
-// ===== Edit this after you publish: paste the link to Tanish Premnath's guide =====
-const GUIDE_URL = "";
-// ==================================================================================
-const $=s=>document.querySelector(s), ls=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
-$('#logo').innerHTML=['r','o','y','g','b','p','b','g','y'].map(c=>`<i style="background:var(--${c})"></i>`).join('');
-if(GUIDE_URL){$('#glink').href=GUIDE_URL}else{$('#glink').style.display='none';$('#gtext').textContent='Tanish Premnath\'s CFOP guide goes here. Set GUIDE_URL at the top of the script in index.html to link it.'}
 
 /* ---------- splotches ---------- */
 (()=>{const C=['--r','--o','--y','--g','--b','--p'],R=['63% 37% 54% 46%/55% 48% 52% 45%','40% 60% 70% 30%/40% 50% 60% 50%','50% 50% 30% 70%/60% 40% 60% 40%','30% 70% 60% 40%/50% 60% 40% 50%'];
@@ -134,9 +124,9 @@ const newScr=()=>$('#scr').textContent=scramble();newScr();$('#newscr').onclick=
 /* ---------- timer ---------- */
 let times=ls('cfop-times')||[],state='idle',t0=0,raf,holdT;
 const pad=$('#pad'),tm=$('#tm'),hint=$('#hint');
-const fmt=ms=>{if(ms==null)return'–';if(ms===Infinity)return'DNF';const s=ms/1000;return s>=60?Math.floor(s/60)+':'+(s%60).toFixed(2).padStart(5,'0'):s.toFixed(2)};
-const avg=n=>{if(times.length<n)return null;const a=times.slice(-n).slice().sort((x,y)=>x-y).slice(1,-1);return a.reduce((p,c)=>p+c,0)/a.length};
-function render(){$('#sBest').textContent=fmt(times.length?Math.min(...times):null);$('#sA5').textContent=fmt(avg(5));$('#sA12').textContent=fmt(avg(12));$('#sN').textContent=times.length;$('#hist').innerHTML=times.slice().reverse().map(t=>`<span>${fmt(t)}</span>`).join('');ls('cfop-times',times)}
+const fmt=ms=>{if(ms==null)return'–';if(ms<0||ms===Infinity)return'DNF';const s=ms/1000;return s>=60?Math.floor(s/60)+':'+(s%60).toFixed(2).padStart(5,'0'):s.toFixed(2)};
+const avg=n=>{if(times.length<n)return null;const a=times.slice(-n).map(v=>v<0?Infinity:v).sort((x,y)=>x-y).slice(1,-1);return a.reduce((p,c)=>p+c,0)/a.length};
+function render(){$('#sBest').textContent=fmt(times.some(v=>v>=0)?Math.min(...times.filter(v=>v>=0)):null);$('#sA5').textContent=fmt(avg(5));$('#sA12').textContent=fmt(avg(12));$('#sN').textContent=times.length;$('#hist').innerHTML=times.slice().reverse().map(t=>`<span>${fmt(t)}</span>`).join('');ls('cfop-times',times)}
 function tick(){tm.textContent=fmt(performance.now()-t0);raf=requestAnimationFrame(tick)}
 function down(){if(state==='run'){stop();return}if(state!=='idle')return;state='hold';pad.className='pad hold';holdT=setTimeout(()=>{if(state==='hold'){state='ready';pad.className='pad ready'}},350)}
 function up(){clearTimeout(holdT);if(state==='ready'){state='run';pad.className='pad';t0=performance.now();hint.textContent='Press any key or tap to stop';tick()}else if(state==='hold'){state='idle';pad.className='pad'}else if(state==='stopped'){state='idle'}}
@@ -144,8 +134,9 @@ function stop(){cancelAnimationFrame(raf);const t=performance.now()-t0;tm.textCo
 addEventListener('keydown',e=>{if(e.target.matches('input')||$('#v-cfop').hidden)return;if(e.code==='Space'){e.preventDefault();if(!e.repeat)down()}else if(state==='run')stop()});
 addEventListener('keyup',e=>{if(e.code==='Space')up()});
 pad.addEventListener('pointerdown',e=>{e.preventDefault();down()});pad.addEventListener('pointerup',up);
-$('#undo').onclick=()=>{times.pop();render()};$('#plus2').onclick=()=>{if(times.length){times[times.length-1]+=2000;render()}};
-$('#clear').onclick=()=>{if(confirm('Clear all solves?')){times=[];tm.textContent='0.00';render()}};render();
+$('#undo').onclick=()=>{times.pop();render()};$('#plus2').onclick=()=>{const i=times.length-1;if(i>=0&&times[i]>=0){times[i]+=2000;tm.textContent=fmt(times[i]);render()}};
+$('#dnf').onclick=()=>{const i=times.length-1;if(i<0)return;times[i]=-times[i]-1;tm.textContent=fmt(times[i]);render()};
+let clrT;$('#clear').onclick=e=>{const b=e.currentTarget;if(b.dataset.sure){clearTimeout(clrT);delete b.dataset.sure;b.textContent='Clear session';times=[];tm.textContent='0.00';render()}else{b.dataset.sure=1;b.textContent='Click again to clear';clrT=setTimeout(()=>{delete b.dataset.sure;b.textContent='Clear session'},3000)}};render();
 
 /* ---------- cube simulator: draws each case by running the algorithm backwards ---------- */
 const MV={U:['y',-1,p=>p[1]==1],D:['y',1,p=>p[1]==-1],R:['x',-1,p=>p[0]==1],L:['x',1,p=>p[0]==-1],F:['z',-1,p=>p[2]==1],B:['z',1,p=>p[2]==-1],u:['y',-1,p=>p[1]>=0],d:['y',1,p=>p[1]<=0],r:['x',-1,p=>p[0]>=0],l:['x',1,p=>p[0]<=0],f:['z',-1,p=>p[2]>=0],b:['z',1,p=>p[2]<=0],M:['x',1,p=>p[0]==0],E:['y',1,p=>p[1]==0],S:['z',-1,p=>p[2]==0],x:['x',-1,()=>true],y:['y',-1,()=>true],z:['z',-1,()=>true]};
